@@ -3,6 +3,7 @@
 
 import cv2
 import numpy as np  # importing libraries
+import math
 
 # rawは(480,640,3)
 
@@ -100,9 +101,16 @@ while(cap.isOpened()):
         cv2.circle(raw, hands_pos[0], 5, (0, 255, 0), -1)         # 重心を赤円で描く
         cv2.circle(raw, hands_pos[1], 5, (0, 255, 0), -1)         # 重心を赤円で描く
         droid = cv2.imread('/home/akio-ubuntu/Desktop/droid.png')
-        cv2.imshow('droid', droid)
+        # cv2.imshow('droid', droid)
+        pos_diff = (hands_pos[1][0]-hands_pos[0][0], hands_pos[1][1]-hands_pos[0][1])
+        R = cv2.getRotationMatrix2D((0,0),-math.degrees(math.atan2(pos_diff[1],pos_diff[0])),1)     # 画像の中心を回転軸として60度回転させる回転行列
+        # im2 = cv2.warpAffine(droid,R,droid.shape[:2])            # アフィン変換で画像を回転
+        im2 = cv2.warpAffine(droid,R,(1000,1000))            # アフィン変換で画像を回転
+        droid = im2
+        # print im2.shape
+        # cv2.imshow("Result",im2)                    # 結果を表示
         # print hands_pos
-        print raw[hands_pos[0][1]:hands_pos[0][1] + droid.shape[1], hands_pos[0][0]:hands_pos[0][0] + droid.shape[0]].shape
+        # print raw[hands_pos[0][1]:hands_pos[0][1] + droid.shape[1], hands_pos[0][0]:hands_pos[0][0] + droid.shape[0]].shape
         (space_x, space_y, ch) = raw[hands_pos[0][1]:hands_pos[0][1] + droid.shape[1], hands_pos[0][0]:hands_pos[0][0] + droid.shape[0]].shape
         raw[hands_pos[0][1]:hands_pos[0][1] + droid.shape[1], hands_pos[0]
             [0]:hands_pos[0][0] + droid.shape[0]] = droid[:space_x, :space_y]
