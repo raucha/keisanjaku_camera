@@ -14,13 +14,15 @@ KEISANJAKU = '/keisanjaku.png'
 
 th_bin = 1
 cap = cv2.VideoCapture(0)  # creating camera object
+hands_pos = [[0, 0],[0,0]]
+
 while(cap.isOpened()):
     ret, raw = cap.read()  # reading the frames
     # gray = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
     cv2.imshow('input', raw)
     img = cv2.GaussianBlur(raw, (15, 15), 0)
 
-    fltr_min = np.array([160,120,10])
+    fltr_min = np.array([150,120,10])
     fltr_max = np.array([180,255,200])
     # マスク画像を用いて元画像から指定した色を抽出
     im_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -58,7 +60,7 @@ while(cap.isOpened()):
     thresh1 = cv2.morphologyEx(
         thresh1, cv2.MORPH_OPEN, np.ones((15, 15), np.uint8))
     thresh1 = cv2.morphologyEx(
-        thresh1, cv2.MORPH_CLOSE, np.ones((30, 30), np.uint8))
+        thresh1, cv2.MORPH_CLOSE, np.ones((50, 50), np.uint8))
     cv2.imshow('bin_mor', thresh1)
 
     #  輪郭抽出
@@ -66,7 +68,6 @@ while(cap.isOpened()):
         thresh1, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     hands = [None, None]
-    hands_pos = [None, None]
     if 2 <= len(contours):
         maxs = [int(0), int(0)]
         # max_area = 0
@@ -88,13 +89,18 @@ while(cap.isOpened()):
 
         cv2.drawContours(raw, hands, -1, (255, 0, 0), 2)
 
+        new_pos = [None, None]
         M = cv2.moments(hands[0])  # 輪郭点から白色1領域の重心を計算
-        hands_pos[0] = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+        new_pos[0] = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
         M = cv2.moments(hands[1])
-        hands_pos[1] = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+        new_pos[1] = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
         # 向かって左側のを0番に
-        if hands_pos[1] < hands_pos[0]:
-            hands_pos[0], hands_pos[1] = hands_pos[1], hands_pos[0]
+        if new_pos[1] < new_pos[0]:
+            new_pos[0], new_pos[1] = new_pos[1], new_pos[0]
+        hands_pos[0] = (int(0.8*hands_pos[0][0] + 0.2*new_pos[0][0]),int(0.8*hands_pos[0][1] + 0.2*new_pos[0][1]))
+        hands_pos[1] = (int(0.8*hands_pos[1][0] + 0.2*new_pos[1][0]),int(0.8*hands_pos[1][1] + 0.2*new_pos[1][1]))
+        # hands_pos[1][0] = int(0.8*hands_pos[1][0] + 0.2*new_pos[1][0])
+        # hands_pos[1][1] = int(0.8*hands_pos[1][1] + 0.2*new_pos[1][1])
         # 重心を表示
         print(u"重心(" + str(hands_pos[0][0]) + "," + str(hands_pos[0][1]) + ")")
         cv2.circle(raw, hands_pos[0], 5, (0, 255, 0), -1)         # 重心を赤円で描く
