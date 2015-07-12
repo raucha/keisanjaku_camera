@@ -28,7 +28,7 @@ while(cap.isOpened()):
     ret, thresh1 = cv2.threshold(
         blur, th_bin, 255, cv2.THRESH_BINARY_INV)
     cv2.imshow('bin', thresh1)
-    thresh1=cv2.morphologyEx(thresh1,cv2.MORPH_OPEN,np.ones(15,15),np.uint8))
+    thresh1=cv2.morphologyEx(thresh1,cv2.MORPH_OPEN,np.ones((15,15),np.uint8))
     cv2.imshow('bin_mor', thresh1)
     # thresh1_orig = thresh1
 
