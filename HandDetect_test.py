@@ -42,31 +42,61 @@ while(cap.isOpened()):
         thresh1, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     #>extract the largest contour
     # print len(contours) #lenは塊の個数を変えす
-    if 0 != len(contours):
-        max_area = 0
+    # if 0 != len(contours):
+    #     max_area = 0
+    #     for i in range(len(contours)):
+    #         cnt = contours[i]
+    #         area = cv2.contourArea(cnt)  # 外形が囲む面積を求める
+    #         if(area > max_area):
+    #             max_area = area
+    #             ci = i
+    #     cnt = contours[ci]  # 面積最大の輪郭線だけ利用
+    #
+    #     hull = cv2.convexHull(cnt)  # 凸集合の頂点集合
+    #
+    #     drawing = np.zeros(img.shape, np.uint8)
+    #     # contourIdx=0, thickness=2で描画
+    #     cv2.drawContours(drawing, [cnt], 0, (0, 255, 0), 2)
+    #     cv2.drawContours(drawing, [hull], 0, (0, 0, 255), 2)
+    #     # cv2.drawcontours(image, contours, contourIdx, color, thickness=None, lineType=None, hierarchy=None, maxLevel=None, offset=None)
+    #     cv2.imshow('output', drawing)
+
+    hands = [None, None]
+    hands_pos = [None,None]
+    if 2 <= len(contours):
+        maxs = [int(0), int(0)]
+        # max_area = 0
         for i in range(len(contours)):
             cnt = contours[i]
-            area = cv2.contourArea(cnt)  # 外形が囲む面積を求める
-            if(area > max_area):
-                max_area = area
-                ci = i
-        cnt = contours[ci]  # 面積最大の輪郭線だけ利用
+            cnt_size = cv2.contourArea(cnt)
+            if cnt_size > maxs[0]:
+                maxs[1] = maxs[0]
+                maxs[0] = cnt_size
+                hands[1] = hands[0]
+                hands[0] = cnt
+            elif cnt_size > maxs[1]:
+                maxs[1] = cnt_size
+                hands[1] = cnt
 
-        hull = cv2.convexHull(cnt)  # 凸集合の頂点集合
+        # hull = cv2.convexHull(cnt)  # 凸集合の頂点集合
 
-        drawing = np.zeros(img.shape, np.uint8)
-        # contourIdx=0, thickness=2で描画
-        cv2.drawContours(drawing, [cnt], 0, (0, 255, 0), 2)
-        cv2.drawContours(drawing, [hull], 0, (0, 0, 255), 2)
-        # cv2.drawcontours(image, contours, contourIdx, color, thickness=None, lineType=None, hierarchy=None, maxLevel=None, offset=None)
-        cv2.imshow('output', drawing)
+        # drawing = np.zeros(img.shape, np.uint8)
+        # cv2.drawContours(drawing, hands, -1, (0, 255, 0), 2)  # contourIdx=0, thickness=2で描画
+        # cv2.imshow('output', drawing)
+
+        cv2.drawContours(raw, hands, -1, (255, 0, 0), 2)
+
+        M = cv2.moments(hands[0])  # 輪郭点から白色領域の重心を計算
+        # (cx, cy) = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+        hands_pos[0] = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+        # print(u"重心(" + str(cx) + "," + str(cy) + ")")     # 重心を表示
+        cv2.circle(raw, hands_pos[0], 5, (0, 255, 0), -1)         # 重心を赤円で描く
+        M = cv2.moments(hands[1])  # 輪郭点から白色領域の重心を計算
+        hands_pos[1] = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+        cv2.circle(raw, hands_pos[1], 5, (0, 255, 0), -1)         # 重心を赤円で描く
 
     cv2.imshow('blur', blur)
-    cv2.drawContours(raw, contours, -1, (255, 0, 0), -1)
-    M = cv2.moments(cnt)  # 輪郭点から白色領域の重心を計算
-    (cx, cy) = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-    print(u"重心(" + str(cx) + "," + str(cy) + ")")     # 重心を表示
-    cv2.circle(raw, (cx, cy), 5, (0, 0, 255), -1)         # 重心を赤円で描く
+
     cv2.imshow('add', raw)
 
     k = cv2.waitKey(10)
