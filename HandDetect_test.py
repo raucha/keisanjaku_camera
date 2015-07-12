@@ -41,7 +41,7 @@ while(cap.isOpened()):
     contours, hierarchy = cv2.findContours(
         thresh1, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     #>extract the largest contour
-    #print len(contours) #lenは塊の個数を変えす
+    # print len(contours) #lenは塊の個数を変えす
     if 0 != len(contours):
         max_area = 0
         for i in range(len(contours)):
@@ -55,13 +55,18 @@ while(cap.isOpened()):
         hull = cv2.convexHull(cnt)  # 凸集合の頂点集合
 
         drawing = np.zeros(img.shape, np.uint8)
-        cv2.drawContours(drawing, [cnt], 0, (0, 255, 0), 2)  # contourIdx=0, thickness=2で描画
+        # contourIdx=0, thickness=2で描画
+        cv2.drawContours(drawing, [cnt], 0, (0, 255, 0), 2)
         cv2.drawContours(drawing, [hull], 0, (0, 0, 255), 2)
         # cv2.drawcontours(image, contours, contourIdx, color, thickness=None, lineType=None, hierarchy=None, maxLevel=None, offset=None)
         cv2.imshow('output', drawing)
 
     cv2.imshow('blur', blur)
     cv2.drawContours(raw, contours, -1, (255, 0, 0), -1)
+    M = cv2.moments(cnt)  # 輪郭点から白色領域の重心を計算
+    (cx, cy) = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+    print(u"重心(" + str(cx) + "," + str(cy) + ")")     # 重心を表示
+    cv2.circle(raw, (cx, cy), 5, (0, 0, 255), -1)         # 重心を赤円で描く
     cv2.imshow('add', raw)
 
     k = cv2.waitKey(10)
