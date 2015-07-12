@@ -4,7 +4,8 @@
 import cv2
 import numpy as np  # importing libraries
 import math
-import os, sys
+import os
+import sys
 
 SCRIPT_PATH = os.path.abspath(os.path.dirname(__file__))
 KEISANJAKU = '/keisanjaku.png'
@@ -104,19 +105,24 @@ while(cap.isOpened()):
         print(u"重心(" + str(hands_pos[0][0]) + "," + str(hands_pos[0][1]) + ")")
         cv2.circle(raw, hands_pos[0], 5, (0, 255, 0), -1)         # 重心を赤円で描く
         cv2.circle(raw, hands_pos[1], 5, (0, 255, 0), -1)         # 重心を赤円で描く
-        jaku = cv2.imread(SCRIPT_PATH+KEISANJAKU)
+        jaku = cv2.imread(SCRIPT_PATH + KEISANJAKU)
         # cv2.imshow('jaku', jaku)
-        pos_diff = (hands_pos[1][0]-hands_pos[0][0], hands_pos[1][1]-hands_pos[0][1])
+        pos_diff = (
+            hands_pos[1][0] - hands_pos[0][0], hands_pos[1][1] - hands_pos[0][1])
         # print hands_pos
-        # print raw[hands_pos[0][1]:hands_pos[0][1] + jaku.shape[1], hands_pos[0][0]:hands_pos[0][0] + jaku.shape[0]].shape
-        (space_y, space_x, ch) = raw[hands_pos[0][1]:hands_pos[0][1] + jaku.shape[0], hands_pos[0][0]:hands_pos[0][0] + jaku.shape[1]].shape
-        print (space_y, space_x, ch), jaku.shape, jaku[:space_y, :space_x].shape
+        # print raw[hands_pos[0][1]:hands_pos[0][1] + jaku.shape[1],
+        # hands_pos[0][0]:hands_pos[0][0] + jaku.shape[0]].shape
+        (space_y, space_x, ch) = raw[hands_pos[0][1]:hands_pos[0][1] + jaku.shape[0],
+                                     hands_pos[0][0]:hands_pos[0][0] + jaku.shape[1]].shape
+        print (space_y, space_x, ch), jaku.shape, jaku[
+            :space_y, :space_x].shape
         print space_y, space_x
         raw[hands_pos[0][1]:hands_pos[0][1] + jaku.shape[0],
             hands_pos[0][0]:hands_pos[0][0] + jaku.shape[1]] = jaku[:space_y, :space_x]
 
     cv2.imshow('blur', blur)
 
+    raw = cv2.resize(raw, (raw.shape[1] * 2, raw.shape[0] * 2))  # 画像を2倍に拡大
     cv2.imshow('add', raw)
 
     k = cv2.waitKey(10)
