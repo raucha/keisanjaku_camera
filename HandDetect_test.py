@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# coding=utf-8
+
 import cv2
 import numpy as np  # importing libraries
 
@@ -31,33 +34,34 @@ while(cap.isOpened()):
     cv2.imshow('bin', thresh1)
     thresh1 = cv2.morphologyEx(
         thresh1, cv2.MORPH_OPEN, np.ones((15, 15), np.uint8))
+    thresh1 = cv2.morphologyEx(
+        thresh1, cv2.MORPH_CLOSE, np.ones((15, 15), np.uint8))
     cv2.imshow('bin_mor', thresh1)
 
     contours, hierarchy = cv2.findContours(
-        thresh1, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-# >extract the largest contour
-
+        thresh1, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    #>extract the largest contour
+    #print len(contours) #lenは塊の個数を変えす
     if 0 != len(contours):
-        max_area = 1
+        max_area = 0
         for i in range(len(contours)):
             cnt = contours[i]
-            area = cv2.contourArea(cnt)
+            area = cv2.contourArea(cnt)  # 外形が囲む面積を求める
             if(area > max_area):
                 max_area = area
                 ci = i
-        cnt = contours[ci]
-    # >now draw the convex hull
-        hull = cv2.convexHull(cnt)
-    # >displaying largest contour and convex hull
+        cnt = contours[ci]  # 面積最大の輪郭線だけ利用
+
+        hull = cv2.convexHull(cnt)  # 凸集合の頂点集合
+
         drawing = np.zeros(img.shape, np.uint8)
-        cv2.drawContours(drawing, [cnt], 0, (0, 255, 0), 2)
+        cv2.drawContours(drawing, [cnt], 0, (0, 255, 0), 2)  # contourIdx=0, thickness=2で描画
         cv2.drawContours(drawing, [hull], 0, (0, 0, 255), 2)
+        # cv2.drawcontours(image, contours, contourIdx, color, thickness=None, lineType=None, hierarchy=None, maxLevel=None, offset=None)
         cv2.imshow('output', drawing)
 
     cv2.imshow('blur', blur)
-    # cv2.imshow('bin', thresh1_orig)
-    # cv2.imshow('hull', hull)
-    cv2.drawContours(raw, contours, -2, (255, 0, 0), -1)
+    cv2.drawContours(raw, contours, -1, (255, 0, 0), -1)
     cv2.imshow('add', raw)
 
     k = cv2.waitKey(10)
