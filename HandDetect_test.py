@@ -9,7 +9,8 @@ while(cap.isOpened()):
     ret, raw = cap.read()  # reading the frames
     # gray = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
     cv2.imshow('input', raw)
-    img = cv2.GaussianBlur(raw, (25,25), 0)
+    img = cv2.GaussianBlur(raw, (15,15), 0)
+    # img = raw
 
     b = cv2.split(img)[0]
     g = cv2.split(img)[1]
@@ -27,7 +28,7 @@ while(cap.isOpened()):
     # make binary image
     ret, thresh1 = cv2.threshold(
         blur, th_bin, 255, cv2.THRESH_BINARY_INV)
-    cv2.imshow('bin', thresh1)
+    cv2.imshow('bin', thresh1)S
     thresh1=cv2.morphologyEx(thresh1,cv2.MORPH_OPEN,np.ones((15,15),np.uint8))
     cv2.imshow('bin_mor', thresh1)
     # thresh1_orig = thresh1
