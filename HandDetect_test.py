@@ -9,7 +9,7 @@ while(cap.isOpened()):
     ret, raw = cap.read()  # reading the frames
     # gray = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
     cv2.imshow('input', raw)
-    img = cv2.GaussianBlur(raw, (15,15), 0)
+    img = cv2.GaussianBlur(raw, (15, 15), 0)
     # img = raw
 
     b = cv2.split(img)[0]
@@ -28,10 +28,10 @@ while(cap.isOpened()):
     # make binary image
     ret, thresh1 = cv2.threshold(
         blur, th_bin, 255, cv2.THRESH_BINARY_INV)
-    cv2.imshow('bin', thresh1)S
-    thresh1=cv2.morphologyEx(thresh1,cv2.MORPH_OPEN,np.ones((15,15),np.uint8))
+    cv2.imshow('bin', thresh1)
+    thresh1 = cv2.morphologyEx(
+        thresh1, cv2.MORPH_OPEN, np.ones((15, 15), np.uint8))
     cv2.imshow('bin_mor', thresh1)
-    # thresh1_orig = thresh1
 
     contours, hierarchy = cv2.findContours(
         thresh1, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -39,8 +39,6 @@ while(cap.isOpened()):
 
     if 0 != len(contours):
         max_area = 1
-        if 0 == len(contours):
-            continue
         for i in range(len(contours)):
             cnt = contours[i]
             area = cv2.contourArea(cnt)
@@ -59,6 +57,9 @@ while(cap.isOpened()):
     cv2.imshow('blur', blur)
     # cv2.imshow('bin', thresh1_orig)
     # cv2.imshow('hull', hull)
+    cv2.drawContours(raw, contours, -2, (255, 0, 0), -1)
+    cv2.imshow('add', raw)
+
     k = cv2.waitKey(10)
     # print "ret:", ret, "    k", k
     if k == 27:
