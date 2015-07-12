@@ -4,6 +4,7 @@
 import cv2
 import numpy as np  # importing libraries
 
+# rawは(480,640,3)
 
 cap = cv2.VideoCapture(0)  # creating camera object
 # th_bin = int(raw_input("maek bin image threshold: "))
@@ -62,7 +63,7 @@ while(cap.isOpened()):
     #     cv2.imshow('output', drawing)
 
     hands = [None, None]
-    hands_pos = [None,None]
+    hands_pos = [None, None]
     if 2 <= len(contours):
         maxs = [int(0), int(0)]
         # max_area = 0
@@ -89,11 +90,21 @@ while(cap.isOpened()):
         M = cv2.moments(hands[0])  # 輪郭点から白色領域の重心を計算
         # (cx, cy) = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
         hands_pos[0] = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-        # print(u"重心(" + str(cx) + "," + str(cy) + ")")     # 重心を表示
+        # 重心を表示
+        print(u"重心(" + str(hands_pos[0][0]) + "," + str(hands_pos[0][1]) + ")")
         cv2.circle(raw, hands_pos[0], 5, (0, 255, 0), -1)         # 重心を赤円で描く
-        M = cv2.moments(hands[1])  # 輪郭点から白色領域の重心を計算
         hands_pos[1] = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
         cv2.circle(raw, hands_pos[1], 5, (0, 255, 0), -1)         # 重心を赤円で描く
+        droid = cv2.imread('/home/akio-ubuntu/Desktop/droid.png')
+        cv2.imshow('droid', droid)
+        # print hands_pos
+        print raw[hands_pos[0][1]:hands_pos[0][1] + droid.shape[1], hands_pos[0][0]:hands_pos[0][0] + droid.shape[0]].shape
+        (space_x, space_y, ch) = raw[hands_pos[0][1]:hands_pos[0][1] + droid.shape[1], hands_pos[0][0]:hands_pos[0][0] + droid.shape[0]].shape
+        raw[hands_pos[0][1]:hands_pos[0][1] + droid.shape[1], hands_pos[0]
+            [0]:hands_pos[0][0] + droid.shape[0]] = droid[:space_x, :space_y]
+        # print raw[0:0+droid.shape[0], 0:0+droid.shape[0]].shape
+        # if raw.shape[0] > hands_pos[0][0]+droid.shape[0] and raw.shape[1] > hands_pos[0][1]+droid.shape[1]:
+        # raw[200:200+droid.shape[0], 100:100+droid.shape[0]] = droid
 
     cv2.imshow('blur', blur)
 
