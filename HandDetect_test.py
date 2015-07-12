@@ -20,7 +20,8 @@ while(cap.isOpened()):
     ret, raw = cap.read()  # reading the frames
     # gray = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
     cv2.imshow('input', raw)
-    img = cv2.GaussianBlur(raw, (15, 15), 0)
+    # img = cv2.GaussianBlur(raw, (15, 15), 0)
+    img = raw
 
     fltr_min = np.array([150,120,10])
     fltr_max = np.array([180,255,200])
@@ -57,10 +58,14 @@ while(cap.isOpened()):
     #     thresh1, cv2.MORPH_OPEN, np.ones((15, 15), np.uint8))
     # thresh1 = cv2.morphologyEx(
     #     thresh1, cv2.MORPH_CLOSE, np.ones((15, 15), np.uint8))
+    # thresh1 = cv2.morphologyEx(
+    #     thresh1, cv2.MORPH_OPEN, np.ones((15, 15), np.uint8))
+    # thresh1 = cv2.morphologyEx(
+    #     thresh1, cv2.MORPH_CLOSE, np.ones((50, 50), np.uint8))
+    thresh1 = cv2.morphologyEx(
+        thresh1, cv2.MORPH_CLOSE, np.ones((15, 15), np.uint8))
     thresh1 = cv2.morphologyEx(
         thresh1, cv2.MORPH_OPEN, np.ones((15, 15), np.uint8))
-    thresh1 = cv2.morphologyEx(
-        thresh1, cv2.MORPH_CLOSE, np.ones((50, 50), np.uint8))
     cv2.imshow('bin_mor', thresh1)
 
     #  輪郭抽出
