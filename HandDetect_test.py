@@ -10,8 +10,9 @@ import sys
 # rawは(480,640,3)
 SCRIPT_PATH = os.path.abspath(os.path.dirname(__file__))
 KEISANJAKU = '/keisanjaku.png'
+KEISANJAKU2 = '/keisanjaku.png'
 cap = cv2.VideoCapture(0)  # creating camera object
-hands_pos = [[0, 0],[0,0]]
+hands_pos = [[0, 0], [0, 0]]
 
 while(cap.isOpened()):
     ret, raw = cap.read()  # reading the frames
@@ -20,8 +21,8 @@ while(cap.isOpened()):
     # img = cv2.GaussianBlur(raw, (15, 15), 0)
     masked = raw
 
-    fltr_min = np.array([150,120,10])
-    fltr_max = np.array([180,255,200])
+    fltr_min = np.array([150, 120, 10])
+    fltr_max = np.array([180, 255, 200])
     # マスク画像を用いて元画像から指定した色を抽出
     im_hsv = cv2.cvtColor(masked, cv2.COLOR_BGR2HSV)
     mask_fltr = cv2.inRange(im_hsv, fltr_min, fltr_max)
@@ -74,21 +75,38 @@ while(cap.isOpened()):
         # 向かって左側のを0番に
         if new_pos[1] < new_pos[0]:
             new_pos[0], new_pos[1] = new_pos[1], new_pos[0]
-        hands_pos[0] = (int(0.8*hands_pos[0][0] + 0.2*new_pos[0][0]),int(0.8*hands_pos[0][1] + 0.2*new_pos[0][1]))
-        hands_pos[1] = (int(0.8*hands_pos[1][0] + 0.2*new_pos[1][0]),int(0.8*hands_pos[1][1] + 0.2*new_pos[1][1]))
+        hands_pos[0] = (int(0.8 * hands_pos[0][0] + 0.2 * new_pos[0][0]),
+                        int(0.8 * hands_pos[0][1] + 0.2 * new_pos[0][1]))
+        hands_pos[1] = (int(0.8 * hands_pos[1][0] + 0.2 * new_pos[1][0]),
+                        int(0.8 * hands_pos[1][1] + 0.2 * new_pos[1][1]))
         # 重心を表示
         # print(u"重心(" + str(hands_pos[0][0]) + "," + str(hands_pos[0][1]) + ")")
         cv2.circle(raw, hands_pos[0], 5, (0, 255, 0), -1)         # 重心を赤円で描く
         cv2.circle(raw, hands_pos[1], 5, (0, 255, 0), -1)
         jaku = cv2.imread(SCRIPT_PATH + KEISANJAKU)
+        jaku2 = cv2.imread(SCRIPT_PATH + KEISANJAKU2)
         pos_diff = (
             hands_pos[1][0] - hands_pos[0][0], hands_pos[1][1] - hands_pos[0][1])
         # print hands_pos
-        resized = cv2.resize(raw, (raw.shape[1] * 2, raw.shape[0] * 2))  # 画像を2倍に拡大
-        (space_y, space_x, ch) = resized[2*hands_pos[0][1]:2*hands_pos[0][1] + jaku.shape[0],
-                                     2*hands_pos[0][0]:2*hands_pos[0][0] + jaku.shape[1]].shape
+
+        # 画像を2倍に拡大
+        resized = cv2.resize(raw, (raw.shape[1] * 2, raw.shape[0] * 2))
+
+        # 計算尺を表示
+        jaku_pos = (2*hands_pos[0][0], 2*hands_pos[0][1])
+        (space_y, space_x, ch) = resized[jaku_pos[1]:jaku_pos[1] + jaku.shape[0],
+                                         jaku_pos[0]:jaku_pos[0] + jaku.shape[1]].shape
         # print (space_y, space_x, ch), jaku.shape, jaku[:space_y, :space_x].shape
-        resized[2*hands_pos[0][1]:2*hands_pos[0][1] + jaku.shape[0],
-            2*hands_pos[0][0]:2*hands_pos[0][0] + jaku.shape[1]] = jaku[:space_y, :space_x]
+        resized[jaku_pos[1]:jaku_pos[1] + jaku.shape[0],
+                jaku_pos[0]:jaku_pos[0] + jaku.shape[1]] = jaku[:space_y, :space_x]
+
+        # 計算尺2を表示
+        jaku2_pos = (2*hands_pos[1][0], 2*hands_pos[0][1] + jaku.shape[0])
+        (space_y, space_x, ch) = resized[jaku2_pos[1]:jaku2_pos[1] + jaku2.shape[0],
+                                         jaku2_pos[0]:jaku2_pos[0] + jaku2.shape[1]].shape
+        # print (space_y, space_x, ch), jaku.shape, jaku[:space_y, :space_x].shape
+        resized[jaku2_pos[1]:jaku2_pos[1] + jaku2.shape[0],
+                jaku2_pos[0]:jaku2_pos[0] + jaku2.shape[1]] = jaku2[:space_y, :space_x]
+
     cv2.imshow('add', resized)
     k = cv2.waitKey(10)
