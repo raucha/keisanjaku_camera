@@ -30,9 +30,15 @@ while(cap.isOpened()):
     masked = cv2.split(masked)[2]  # 赤だけ取り出す
     cv2.imshow('masked', masked)
 
-    morphed = masked
+    # 2値化
+    _ret, bined = cv2.threshold(masked, 1, 255, cv2.THRESH_BINARY)
+    cv2.imshow('bined', bined)
+
+    # モフォロジー演算
+    morphed = bined
+    # morphed = masked
     morphed = cv2.morphologyEx(
-        masked, cv2.MORPH_CLOSE, np.ones((15, 15), np.uint8))
+        morphed, cv2.MORPH_CLOSE, np.ones((15, 15), np.uint8))
     cv2.imshow('morph_close', morphed)
     morphed = cv2.morphologyEx(
         morphed, cv2.MORPH_OPEN, np.ones((15, 15), np.uint8))
@@ -42,6 +48,7 @@ while(cap.isOpened()):
     contours, _ = cv2.findContours(
         morphed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     hands = [None, None]
+    resized = cv2.resize(raw, (raw.shape[1] * 2, raw.shape[0] * 2))  # 画像を2倍に拡大
     if 2 <= len(contours):
         maxs = [0, 0]
         # max_area = 0
@@ -77,13 +84,11 @@ while(cap.isOpened()):
         pos_diff = (
             hands_pos[1][0] - hands_pos[0][0], hands_pos[1][1] - hands_pos[0][1])
         # print hands_pos
-        (space_y, space_x, ch) = raw[hands_pos[0][1]:hands_pos[0][1] + jaku.shape[0],
-                                     hands_pos[0][0]:hands_pos[0][0] + jaku.shape[1]].shape
+        resized = cv2.resize(raw, (raw.shape[1] * 2, raw.shape[0] * 2))  # 画像を2倍に拡大
+        (space_y, space_x, ch) = resized[2*hands_pos[0][1]:2*hands_pos[0][1] + jaku.shape[0],
+                                     2*hands_pos[0][0]:2*hands_pos[0][0] + jaku.shape[1]].shape
         # print (space_y, space_x, ch), jaku.shape, jaku[:space_y, :space_x].shape
-        raw[hands_pos[0][1]:hands_pos[0][1] + jaku.shape[0],
-            hands_pos[0][0]:hands_pos[0][0] + jaku.shape[1]] = jaku[:space_y, :space_x]
-
-    raw = cv2.resize(raw, (raw.shape[1] * 2, raw.shape[0] * 2))  # 画像を2倍に拡大
-    cv2.imshow('add', raw)
-
+        resized[2*hands_pos[0][1]:2*hands_pos[0][1] + jaku.shape[0],
+            2*hands_pos[0][0]:2*hands_pos[0][0] + jaku.shape[1]] = jaku[:space_y, :space_x]
+    cv2.imshow('add', resized)
     k = cv2.waitKey(10)
