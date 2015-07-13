@@ -7,12 +7,9 @@ import math
 import os
 import sys
 
+# rawは(480,640,3)
 SCRIPT_PATH = os.path.abspath(os.path.dirname(__file__))
 KEISANJAKU = '/keisanjaku.png'
-
-# rawは(480,640,3)
-
-th_bin = 1
 cap = cv2.VideoCapture(0)  # creating camera object
 hands_pos = [[0, 0],[0,0]]
 
@@ -21,60 +18,32 @@ while(cap.isOpened()):
     # gray = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
     cv2.imshow('input', raw)
     # img = cv2.GaussianBlur(raw, (15, 15), 0)
-    img = raw
+    masked = raw
 
     fltr_min = np.array([150,120,10])
     fltr_max = np.array([180,255,200])
     # マスク画像を用いて元画像から指定した色を抽出
-    im_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    im_hsv = cv2.cvtColor(masked, cv2.COLOR_BGR2HSV)
     mask_fltr = cv2.inRange(im_hsv, fltr_min, fltr_max)
-    diff = cv2.bitwise_and(img,img, mask=mask_fltr)
-    diff = cv2.split(diff)[2]
-    cv2.imshow('diff', diff)
+    masked = cv2.bitwise_and(masked, masked, mask=mask_fltr)
+    # cv2.imshow('bef', masked)
+    masked = cv2.split(masked)[2]  # 赤だけ取り出す
+    cv2.imshow('masked', masked)
 
-
-
-    # img = raw
-
-    # b = cv2.split(img)[0]
-    # g = cv2.split(img)[1]
-    # r = cv2.split(img)[2]
-    # # cv2.imshow('b', b)
-    # # cv2.imshow('g', g)
-    # # cv2.imshow('r', r)
-    # diff = cv2.add(-r, b)
-    # diff = cv2.add(diff, g)
-    # cv2.imshow('tmp', diff)
-    gray = diff
-
-    # blur = cv2.GaussianBlur(gray, (5, 5), 0)
-    blur = gray
-    # make binary image
-    # ret, thresh1 = cv2.threshold(blur, th_bin, 255, cv2.THRESH_BINARY_INV)
-    ret, thresh1 = cv2.threshold(blur, th_bin, 255, cv2.THRESH_BINARY)
-    cv2.imshow('bin', thresh1)
-    #モフォロジー演算
-    # thresh1 = cv2.morphologyEx(
-    #     thresh1, cv2.MORPH_OPEN, np.ones((15, 15), np.uint8))
-    # thresh1 = cv2.morphologyEx(
-    #     thresh1, cv2.MORPH_CLOSE, np.ones((15, 15), np.uint8))
-    # thresh1 = cv2.morphologyEx(
-    #     thresh1, cv2.MORPH_OPEN, np.ones((15, 15), np.uint8))
-    # thresh1 = cv2.morphologyEx(
-    #     thresh1, cv2.MORPH_CLOSE, np.ones((50, 50), np.uint8))
-    thresh1 = cv2.morphologyEx(
-        thresh1, cv2.MORPH_CLOSE, np.ones((15, 15), np.uint8))
-    thresh1 = cv2.morphologyEx(
-        thresh1, cv2.MORPH_OPEN, np.ones((15, 15), np.uint8))
-    cv2.imshow('bin_mor', thresh1)
+    morphed = masked
+    morphed = cv2.morphologyEx(
+        masked, cv2.MORPH_CLOSE, np.ones((15, 15), np.uint8))
+    cv2.imshow('morph_close', morphed)
+    morphed = cv2.morphologyEx(
+        morphed, cv2.MORPH_OPEN, np.ones((15, 15), np.uint8))
+    cv2.imshow('morph_close_opne', morphed)
 
     #  輪郭抽出
     contours, _ = cv2.findContours(
-        thresh1, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
+        morphed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     hands = [None, None]
     if 2 <= len(contours):
-        maxs = [int(0), int(0)]
+        maxs = [0, 0]
         # max_area = 0
         for i in range(len(contours)):
             cnt = contours[i]
@@ -88,10 +57,6 @@ while(cap.isOpened()):
                 maxs[1] = cnt_size
                 hands[1] = cnt
 
-        # drawing = np.zeros(img.shape, np.uint8)
-        # cv2.drawContours(drawing, hands, -1, (0, 255, 0), 2)  # contourIdx=0, thickness=2で描画
-        # cv2.imshow('output', drawing)
-
         cv2.drawContours(raw, hands, -1, (255, 0, 0), 2)
 
         new_pos = [None, None]
@@ -104,10 +69,8 @@ while(cap.isOpened()):
             new_pos[0], new_pos[1] = new_pos[1], new_pos[0]
         hands_pos[0] = (int(0.8*hands_pos[0][0] + 0.2*new_pos[0][0]),int(0.8*hands_pos[0][1] + 0.2*new_pos[0][1]))
         hands_pos[1] = (int(0.8*hands_pos[1][0] + 0.2*new_pos[1][0]),int(0.8*hands_pos[1][1] + 0.2*new_pos[1][1]))
-        # hands_pos[1][0] = int(0.8*hands_pos[1][0] + 0.2*new_pos[1][0])
-        # hands_pos[1][1] = int(0.8*hands_pos[1][1] + 0.2*new_pos[1][1])
         # 重心を表示
-        print(u"重心(" + str(hands_pos[0][0]) + "," + str(hands_pos[0][1]) + ")")
+        # print(u"重心(" + str(hands_pos[0][0]) + "," + str(hands_pos[0][1]) + ")")
         cv2.circle(raw, hands_pos[0], 5, (0, 255, 0), -1)         # 重心を赤円で描く
         cv2.circle(raw, hands_pos[1], 5, (0, 255, 0), -1)
         jaku = cv2.imread(SCRIPT_PATH + KEISANJAKU)
@@ -116,12 +79,10 @@ while(cap.isOpened()):
         # print hands_pos
         (space_y, space_x, ch) = raw[hands_pos[0][1]:hands_pos[0][1] + jaku.shape[0],
                                      hands_pos[0][0]:hands_pos[0][0] + jaku.shape[1]].shape
-        print (space_y, space_x, ch), jaku.shape, jaku[:space_y, :space_x].shape
-        print space_y, space_x
+        # print (space_y, space_x, ch), jaku.shape, jaku[:space_y, :space_x].shape
         raw[hands_pos[0][1]:hands_pos[0][1] + jaku.shape[0],
             hands_pos[0][0]:hands_pos[0][0] + jaku.shape[1]] = jaku[:space_y, :space_x]
 
-    cv2.imshow('blur', blur)
     raw = cv2.resize(raw, (raw.shape[1] * 2, raw.shape[0] * 2))  # 画像を2倍に拡大
     cv2.imshow('add', raw)
 
