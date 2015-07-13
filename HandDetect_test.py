@@ -10,7 +10,7 @@ import sys
 # rawは(480,640,3)
 SCRIPT_PATH = os.path.abspath(os.path.dirname(__file__))
 KEISANJAKU = '/keisanjaku.png'
-KEISANJAKU2 = '/keisanjaku.png'
+KEISANJAKU2 = '/keisanjaku2.png'
 cap = cv2.VideoCapture(0)  # creating camera object
 hands_pos = [[0, 0], [0, 0]]
 
