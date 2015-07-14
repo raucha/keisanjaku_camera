@@ -85,10 +85,10 @@ while(cap.isOpened()):
         # 向かって左側のを0番に
         if new_pos[1] < new_pos[0]:
             new_pos[0], new_pos[1] = new_pos[1], new_pos[0]
-        hands_pos[0] = (int(0.8 * hands_pos[0][0] + 0.2 * new_pos[0][0]),
-                        int(0.8 * hands_pos[0][1] + 0.2 * new_pos[0][1]))
-        hands_pos[1] = (int(0.8 * hands_pos[1][0] + 0.2 * new_pos[1][0]),
-                        int(0.8 * hands_pos[1][1] + 0.2 * new_pos[1][1]))
+        hands_pos[0] = (int(0.9 * hands_pos[0][0] + 0.1 * new_pos[0][0]),
+                        int(0.9 * hands_pos[0][1] + 0.1 * new_pos[0][1]))
+        hands_pos[1] = (int(0.9 * hands_pos[1][0] + 0.1 * new_pos[1][0]),
+                        int(0.9 * hands_pos[1][1] + 0.1 * new_pos[1][1]))
         # 重心を表示
         # print(u"重心(" + str(hands_pos[0][0]) + "," + str(hands_pos[0][1]) + ")")
         cv2.circle(raw, hands_pos[0], 5, (0, 255, 0), -1)         # 重心を赤円で描く
