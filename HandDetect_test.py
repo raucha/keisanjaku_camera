@@ -11,7 +11,9 @@ import sys
 SCRIPT_PATH = os.path.abspath(os.path.dirname(__file__))
 KEISANJAKU = '/keisanjaku.png'
 KEISANJAKU2 = '/keisanjaku2.png'
+FACE_XML = '/haarcascade_frontalface_default.xml'
 cap = cv2.VideoCapture(0)  # creating camera object
+cascade = cv2.CascadeClassifier(SCRIPT_PATH+FACE_XML)    # 分類器をロード
 hands_pos = [[0, 0], [0, 0]]
 
 while(cap.isOpened()):
@@ -115,6 +117,18 @@ while(cap.isOpened()):
     # print (space_y, space_x, ch), jaku.shape, jaku[:space_y, :space_x].shape
     resized[jaku2_pos[1]:jaku2_pos[1] + jaku2.shape[0],
             jaku2_pos[0]:jaku2_pos[0] + jaku2.shape[1]] = jaku2[:space_y, :space_x]
+
+    ## 顔検出
+    small = cv2.resize(raw, (int(raw.shape[1] * 0.25), int(raw.shape[0] * 0.25)))  # 画像を2倍に拡大
+    face = cascade.detectMultiScale(small, 1.1, 3)    # 顔探索(画像,縮小スケール,最低矩形数)
+    # 顔検出した部分にモザイク処理
+    for (x, y, w, h) in face:
+        im2 = small[y:y+h, x:x+w]
+        im2 = cv2.resize(im2, (w/10, h/10))
+        im2 = cv2.resize(im2, (w, h), interpolation=cv2.cv.CV_INTER_NN)
+        im2 = cv2.resize(im2, (int(im2.shape[1] * 8), int(im2.shape[0] * 8)))  # 画像を2倍に拡大
+        resized[8*y:8*y+8*h, 8*x:8*x+8*w] = im2
+
 
     cv2.imshow('add', resized)
     k = cv2.waitKey(10)
