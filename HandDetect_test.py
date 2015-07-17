@@ -13,7 +13,7 @@ KEISANJAKU = '/keisanjaku.png'
 KEISANJAKU2 = '/keisanjaku2.png'
 FACE_XML = '/haarcascade_frontalface_default.xml'
 cap = cv2.VideoCapture(0)  # creating camera object
-cascade = cv2.CascadeClassifier(SCRIPT_PATH+FACE_XML)    # 分類器をロード
+cascade = cv2.CascadeClassifier(SCRIPT_PATH + FACE_XML)    # 分類器をロード
 hands_pos = [[0, 0], [0, 0]]
 
 while(cap.isOpened()):
@@ -36,7 +36,7 @@ while(cap.isOpened()):
     im_hsv = cv2.cvtColor(raw, cv2.COLOR_BGR2HSV)
     mask_fltr += cv2.inRange(im_hsv, fltr_min, fltr_max)
 
-    cv2.imshow('mask', mask_fltr)
+    # cv2.imshow('mask', mask_fltr)
     masked = cv2.bitwise_and(raw, raw, mask=mask_fltr)
 
     # cv2.imshow('bef', masked)
@@ -45,7 +45,7 @@ while(cap.isOpened()):
 
     # 2値化
     _ret, bined = cv2.threshold(masked, 1, 255, cv2.THRESH_BINARY)
-    cv2.imshow('bined', bined)
+    cv2.imshow('binaried', bined)
 
     # モフォロジー演算
     morphed = bined
@@ -103,7 +103,7 @@ while(cap.isOpened()):
     jaku = cv2.imread(SCRIPT_PATH + KEISANJAKU)
     jaku2 = cv2.imread(SCRIPT_PATH + KEISANJAKU2)
     # 計算尺を表示
-    jaku_pos = (2*hands_pos[0][0], 2*hands_pos[0][1])
+    jaku_pos = (2 * hands_pos[0][0], 2 * hands_pos[0][1])
     (space_y, space_x, ch) = resized[jaku_pos[1]:jaku_pos[1] + jaku.shape[0],
                                      jaku_pos[0]:jaku_pos[0] + jaku.shape[1]].shape
     # print (space_y, space_x, ch), jaku.shape, jaku[:space_y, :space_x].shape
@@ -111,24 +111,25 @@ while(cap.isOpened()):
             jaku_pos[0]:jaku_pos[0] + jaku.shape[1]] = jaku[:space_y, :space_x]
 
     # 計算尺2を表示
-    jaku2_pos = (2*hands_pos[1][0], 2*hands_pos[0][1] + jaku.shape[0])
+    jaku2_pos = (2 * hands_pos[1][0], 2 * hands_pos[0][1] + jaku.shape[0])
     (space_y, space_x, ch) = resized[jaku2_pos[1]:jaku2_pos[1] + jaku2.shape[0],
                                      jaku2_pos[0]:jaku2_pos[0] + jaku2.shape[1]].shape
     # print (space_y, space_x, ch), jaku.shape, jaku[:space_y, :space_x].shape
     resized[jaku2_pos[1]:jaku2_pos[1] + jaku2.shape[0],
             jaku2_pos[0]:jaku2_pos[0] + jaku2.shape[1]] = jaku2[:space_y, :space_x]
 
-    ## 顔検出
-    small = cv2.resize(raw, (int(raw.shape[1] * 0.25), int(raw.shape[0] * 0.25)))  # 画像を2倍に拡大
+    # 顔検出
+    small = cv2.resize(
+        raw, (int(raw.shape[1] * 0.25), int(raw.shape[0] * 0.25)))  # 画像を2倍に拡大
     face = cascade.detectMultiScale(small, 1.1, 3)    # 顔探索(画像,縮小スケール,最低矩形数)
     # 顔検出した部分にモザイク処理
     for (x, y, w, h) in face:
-        im2 = small[y:y+h, x:x+w]
-        im2 = cv2.resize(im2, (w/10, h/10))
+        im2 = small[y:y + h, x:x + w]
+        im2 = cv2.resize(im2, (w / 10, h / 10))
         im2 = cv2.resize(im2, (w, h), interpolation=cv2.cv.CV_INTER_NN)
-        im2 = cv2.resize(im2, (int(im2.shape[1] * 8), int(im2.shape[0] * 8)))  # 画像を2倍に拡大
-        resized[8*y:8*y+8*h, 8*x:8*x+8*w] = im2
+        im2 = cv2.resize(
+            im2, (int(im2.shape[1] * 8), int(im2.shape[0] * 8)))  # 画像を2倍に拡大
+        resized[8 * y:8 * y + 8 * h, 8 * x:8 * x + 8 * w] = im2
 
-
-    cv2.imshow('add', resized)
+    cv2.imshow('last', resized)
     k = cv2.waitKey(10)
